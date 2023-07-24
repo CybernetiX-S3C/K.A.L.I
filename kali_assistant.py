@@ -22,6 +22,11 @@ def format_tool_info(tool_name, tool_description, usage_example, additional_opti
     print("ADDITIONAL OPTIONS:")
     print(additional_options)
 
+def list_all_tools():
+    print("\n== LIST OF AVAILABLE TOOLS ==")
+    for tool_name in kali_tools:
+        print(f"- {tool_name.capitalize()}")
+
 def search_tool(tool_name):
     kali_tools = {
         "nmap": {
@@ -176,7 +181,9 @@ def search_tool(tool_name):
         },
     }
 
-    if tool_name in kali_tools:
+    if tool_name == "list":
+        list_all_tools()
+    elif tool_name in kali_tools:
         tool_info = kali_tools[tool_name]
         format_tool_info(tool_name, tool_info["description"], tool_info["usage_example"], tool_info["additional_options"])
     else:
@@ -185,7 +192,7 @@ def search_tool(tool_name):
 if __name__ == "__main__":
     greet_user()
     while True:
-        tool_name = input("\nPlease enter the name of the tool you want to learn about (or 'exit' to quit): ").lower()
+        tool_name = input("\nPlease enter the name of the tool you want to learn about (or 'list' to see all available tools, or 'exit' to quit): ").lower()
         if tool_name == "exit":
             print("Thank you for using K.A.L.I. Have a great day!")
             break
