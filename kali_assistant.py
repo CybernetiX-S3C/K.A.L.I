@@ -12,11 +12,13 @@ def greet_user():
     username = get_username()
     print(f"K.A.L.I. - Kali's Assistant for Learning and Investigations: Hello, {username}! I'm here to help you with your security and penetration testing inquiries on Kali Linux. How can I assist you today?")
 
-def format_tool_info(tool_name, tool_description):
+def format_tool_manpage(tool_name, tool_description):
     print(f"\n== {tool_name.upper()} ==\n")
+    print("DESCRIPTION:")
     print(tool_description)
-    print("\nUse the following command to see the tool's manual page:")
-    print(f"man {tool_name}\n")
+    print("\nUSAGE:")
+    print(f"To use {tool_name}, you can follow the command below:")
+    print(f"$ {tool_name} [options]\n")
 
 def search_tool(tool_name):
     kali_tools = {
@@ -44,11 +46,16 @@ def search_tool(tool_name):
         "zenmap": "Zenmap is the official Nmap Security Scanner GUI.",
         "bettercap": "Bettercap is a powerful, easily extensible, and portable framework for network attacks and man-in-the-middle attacks.",
         "mitmproxy": "Mitmproxy is an interactive, SSL-capable man-in-the-middle proxy for HTTP with a console interface.",
-        # Add more tools and descriptions here
+        "unicornscan": "Unicornscan is a stateless and fast network scanning utility.",
+        "hyena": "Hyena is a password-cracking tool for offline password cracking.",
+        "cherrytree": "CherryTree is a hierarchical note-taking application, featuring rich text and syntax highlighting.",
+        "setoolkit": "Setoolkit is a toolkit for social engineering attacks, including phishing campaigns and website clones.",
+        "routersploit": "Routersploit is an open-source exploitation framework dedicated to embedded devices.",
+        "beef-xss": "Beef-XSS (Browser Exploitation Framework) is a powerful penetration testing tool used for targeting web browsers.",
     }
 
     if tool_name in kali_tools:
-        format_tool_info(tool_name, kali_tools[tool_name])
+        format_tool_manpage(tool_name, kali_tools[tool_name])
     else:
         print(f"Sorry, '{tool_name}' is not a recognized tool in Kali Linux. Please check the name and try again.")
 
@@ -60,4 +67,4 @@ if __name__ == "__main__":
             print("Thank you for using K.A.L.I. Have a great day!")
             break
         search_tool(tool_name)
-      
+        
