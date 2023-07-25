@@ -1,9 +1,14 @@
+#import os
+#import PyPDF2
+#import ebooklib
+#from ebooklib import epub
+#import re
+#import multiprocessing
 import os
 import PyPDF2
 import ebooklib
 from ebooklib import epub
 import re
-import multiprocessing
 
 def get_username():
     try:
@@ -28,6 +33,11 @@ def format_tool_info(tool_name, tool_description, usage_example, additional_opti
     print(additional_options)
 
 def list_all_tools():
+    print("\n== LIST OF AVAILABLE TOOLS ==")
+    for tool_name in kali_tools:
+        print(f"- {tool_name.capitalize()}")
+
+def search_tool(tool_name):
     kali_tools = {
         "nmap": {
             "description": "Nmap is a powerful network scanner used to discover hosts and services on a computer network.",
@@ -182,45 +192,36 @@ def list_all_tools():
     }
 
 
-    print("\n== LIST OF AVAILABLE TOOLS ==")
-    for tool_name, tool_info in kali_tools.items():
-        print(f"- {tool_name.capitalize()}")
-    print("")
-
-def search_question_in_file(args):
-    file_path, question = args
-    file_extension = os.path.splitext(file_path)[1]
-    if file_extension == ".pdf":
-        with open(file_path, "rb") as pdf_file:
-            pdf_reader = PyPDF2.PdfFileReader(pdf_file)
-            for page_num in range(pdf_reader.getNumPages()):
-                page = pdf_reader.getPage(page_num)
-                page_text = page.extractText().replace("\n", "").lower()
-                if question.lower() in page_text:
-                    answer = re.search(f"{question}(.+?)\\n", page_text)
-                    if answer:
-                        return answer.group(1).strip()
-    elif file_extension == ".epub":
-        book = epub.read_epub(file_path)
-        for item in book.get_items():
-            if isinstance(item, epub.EpubTextItem):
-                text = item.get_content().decode("utf-8").replace("\n", "").lower()
-                if question.lower() in text:
-                    answer = re.search(f"{question}(.+?)\\n", text)
-                    if answer:
-                        return answer.group(1).strip()
-    return None
+    if tool_name.lower() == "list":
+        list_all_tools()
+    elif tool_name in kali_tools:
+        tool_info = kali_tools[tool_name]
+        format_tool_info(tool_name, tool_info["description"], tool_info["usage_example"], tool_info["additional_options"])
+    else:
+        print(f"Sorry, '{tool_name}' is not a recognized tool in Kali Linux. Please check the name and try again.")
 
 def search_question_in_files(question, file_list):
-    args_list = [(file_path, question) for file_path in file_list]
-    pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
-    results = pool.map(search_question_in_file, args_list)
-    pool.close()
-    pool.join()
-
-    for answer in results:
-        if answer:
-            return answer
+    for file_path in file_list:
+        file_extension = os.path.splitext(file_path)[1]
+        if file_extension == ".pdf":
+            with open(file_path, "rb") as pdf_file:
+                pdf_reader = PyPDF2.PdfFileReader(pdf_file)
+                for page_num in range(pdf_reader.getNumPages()):
+                    page = pdf_reader.getPage(page_num)
+                    page_text = page.extractText().replace("\n", "").lower()
+                    if question.lower() in page_text:
+                        answer = re.search(f"{question}(.+?)\\n", page_text)
+                        if answer:
+                            return answer.group(1).strip()
+        elif file_extension == ".epub":
+            book = epub.read_epub(file_path)
+            for item in book.get_items():
+                if isinstance(item, epub.EpubTextItem):
+                    text = item.get_content().decode("utf-8").replace("\n", "").lower()
+                    if question.lower() in text:
+                        answer = re.search(f"{question}(.+?)\\n", text)
+                        if answer:
+                            return answer.group(1).strip()
     return None
 
 if __name__ == "__main__":
