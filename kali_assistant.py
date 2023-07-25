@@ -44,15 +44,18 @@ def search_question_in_files(question, file_list):
     for file_path in file_list:
         file_extension = os.path.splitext(file_path)[1]
         if file_extension == ".pdf":
-            with open(file_path, "rb") as pdf_file:
-                pdf_reader = PyPDF2.PdfFileReader(pdf_file)
-                for page_num in range(pdf_reader.getNumPages()):
-                    page = pdf_reader.getPage(page_num)
-                    page_text = page.extractText().replace("\n", "").lower()
-                    if question.lower() in page_text:
-                        answer = re.search(f"{question}(.+?)\\n", page_text)
-                        if answer:
-                            return answer.group(1).strip()
+            try:
+                with open(file_path, "rb") as pdf_file:
+                    pdf_reader = PyPDF2.PdfFileReader(pdf_file)
+                    for page_num in range(pdf_reader.getNumPages()):
+                        page = pdf_reader.getPage(page_num)
+                        page_text = page.extractText().replace("\n", "").lower()
+                        if question.lower() in page_text:
+                            answer = re.search(f"{question}(.+?)\\n", page_text)
+                            if answer:
+                                return answer.group(1).strip()
+            except KeyError:
+                print(f"Error: The PDF file '{file_path}' does not contain text content or is corrupted.")
         elif file_extension == ".epub":
             book = epub.read_epub(file_path)
             for item in book.get_items():
