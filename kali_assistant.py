@@ -31,7 +31,60 @@ def list_all_tools(kali_tools):
     for tool_name in kali_tools:
         print(f"- {tool_name.capitalize()}")
 
-def search_tool(tool_name):
+def search_tool(tool_name, kali_tools):
+    if tool_name.lower() == "list":
+        list_all_tools(kali_tools)
+    elif tool_name in kali_tools:
+        tool_info = kali_tools[tool_name]
+        format_tool_info(tool_name, tool_info["description"], tool_info["usage_example"], tool_info["additional_options"])
+    else:
+        print(f"Sorry, '{tool_name}' is not a recognized tool in Kali Linux. Please check the name and try again.")
+
+def search_question_in_files(question, file_list):
+    for file_path in file_list:
+        file_extension = os.path.splitext(file_path)[1]
+        if file_extension == ".pdf":
+            try:
+                with open(file_path, "rb") as pdf_file:
+                    pdf_reader = PyPDF2.PdfFileReader(pdf_file)
+                    for page_num in range(pdf_reader.getNumPages()):
+                        try:
+                            page = pdf_reader.getPage(page_num)
+                            page_text = page.extractText().replace("\n", "").lower()
+                            if question.lower() in page_text:
+                                answer = re.search(f"{question}(.+?)\\n", page_text)
+                                if answer:
+                                    return answer.group(1).strip()
+                        except:
+                            # If an exception occurs during text extraction, continue with the next page
+                            continue
+            except:
+                # If an exception occurs during PDF file opening, continue with the next file
+                print(f"Error: The PDF file '{file_path}' could not be processed.")
+                continue
+        elif file_extension == ".epub":
+            book = epub.read_epub(file_path)
+            for item in book.get_items():
+                if isinstance(item, epub.EpubTextItem):
+                    text = item.get_content().decode("utf-8").replace("\n", "").lower()
+                    if question.lower() in text:
+                        answer = re.search(f"{question}(.+?)\\n", text)
+                        if answer:
+                            return answer.group(1).strip()
+    return None
+
+if __name__ == "__main__":
+    greet_user()
+
+    # Directory path to the database folder containing PDF and ePub files
+    database_folder = "database"
+    file_list = []
+
+    for root, _, files in os.walk(database_folder):
+        for file in files:
+            file_list.append(os.path.join(root, file))
+
+    # Define the kali_tools dictionary here
     kali_tools = {
         "nmap": {
             "description": "Nmap is a powerful network scanner used to discover hosts and services on a computer network.",
@@ -185,58 +238,6 @@ def search_tool(tool_name):
         },
     }
 
-    if tool_name.lower() == "list":
-        list_all_tools(kali_tools)
-    elif tool_name in kali_tools:
-        tool_info = kali_tools[tool_name]
-        format_tool_info(tool_name, tool_info["description"], tool_info["usage_example"], tool_info["additional_options"])
-    else:
-        print(f"Sorry, '{tool_name}' is not a recognized tool in Kali Linux. Please check the name and try again.")
-
-def search_question_in_files(question, file_list):
-    for file_path in file_list:
-        file_extension = os.path.splitext(file_path)[1]
-        if file_extension == ".pdf":
-            try:
-                with open(file_path, "rb") as pdf_file:
-                    pdf_reader = PyPDF2.PdfFileReader(pdf_file)
-                    for page_num in range(pdf_reader.getNumPages()):
-                        try:
-                            page = pdf_reader.getPage(page_num)
-                            page_text = page.extractText().replace("\n", "").lower()
-                            if question.lower() in page_text:
-                                answer = re.search(f"{question}(.+?)\\n", page_text)
-                                if answer:
-                                    return answer.group(1).strip()
-                        except:
-                            # If an exception occurs during text extraction, continue with the next page
-                            continue
-            except:
-                # If an exception occurs during PDF file opening, continue with the next file
-                print(f"Error: The PDF file '{file_path}' could not be processed.")
-                continue
-        elif file_extension == ".epub":
-            book = epub.read_epub(file_path)
-            for item in book.get_items():
-                if isinstance(item, epub.EpubTextItem):
-                    text = item.get_content().decode("utf-8").replace("\n", "").lower()
-                    if question.lower() in text:
-                        answer = re.search(f"{question}(.+?)\\n", text)
-                        if answer:
-                            return answer.group(1).strip()
-    return None
-
-if __name__ == "__main__":
-    greet_user()
-
-    # Directory path to the database folder containing PDF and ePub files
-    database_folder = "database"
-    file_list = []
-
-    for root, _, files in os.walk(database_folder):
-        for file in files:
-            file_list.append(os.path.join(root, file))
-
     while True:
         print("\nOPTIONS:")
         print("1. Enter the name of the tool you want to learn about.")
@@ -259,4 +260,4 @@ if __name__ == "__main__":
             else:
                 print("Sorry, the answer to your question was not found in the database.")
         else:
-            search_tool(user_choice)
+            search_tool(user_choice, kali_tools)
