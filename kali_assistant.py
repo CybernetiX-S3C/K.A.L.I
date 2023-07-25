@@ -1,9 +1,3 @@
-#import os
-#import PyPDF2
-#import ebooklib
-#from ebooklib import epub
-#import re
-#import multiprocessing
 import os
 import PyPDF2
 import ebooklib
@@ -191,7 +185,6 @@ def search_tool(tool_name):
         },
     }
 
-
     if tool_name.lower() == "list":
         list_all_tools()
     elif tool_name in kali_tools:
@@ -258,3 +251,4 @@ if __name__ == "__main__":
                 print("Sorry, the answer to your question was not found in the database.")
         else:
             search_tool(user_choice)
+            
