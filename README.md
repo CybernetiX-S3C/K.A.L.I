@@ -34,13 +34,13 @@ K.A.L.I. is a command-line-based assistant that interacts with users to provide 
 2. Clone the K.A.L.I. repository to your local machine:
 
    ```bash
-   git clone https://github.com/your-username/kali-assistant.git
+   git clone https://github.com/your-username/K.A.L.I.git
    ```
 
 3. Navigate to the project directory:
 
    ```bash
-   cd kali-assistant
+   cd K.A.L.I
    ```
 
 4. Run K.A.L.I.:
