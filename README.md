@@ -34,7 +34,7 @@ K.A.L.I. is a command-line-based assistant that interacts with users to provide 
 2. Clone the K.A.L.I. repository to your local machine:
 
    ```bash
-   git clone https://github.com/your-username/K.A.L.I.git
+   git clone https://github.com/CybernetiX-S3C/K.A.L.I.git
    ```
 
 3. Navigate to the project directory:
