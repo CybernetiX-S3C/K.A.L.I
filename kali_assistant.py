@@ -1,4 +1,8 @@
 import os
+import PyPDF2
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize, sent_tokenize
 
 def get_username():
     try:
@@ -22,21 +26,53 @@ def format_tool_info(tool_name, tool_description, usage_example, additional_opti
     print("ADDITIONAL OPTIONS:")
     print(additional_options)
 
-def list_all_tools(kali_tools):
+def list_all_tools():
     print("\n== LIST OF AVAILABLE TOOLS ==")
     for tool_name in kali_tools:
         print(f"- {tool_name.capitalize()}")
 
-def search_tool(tool_name, kali_tools):
-    if tool_name.lower() == "list":
-        list_all_tools(kali_tools)
-    elif tool_name in kali_tools:
-        tool_info = kali_tools[tool_name]
-        format_tool_info(tool_name, tool_info["description"], tool_info["usage_example"], tool_info["additional_options"])
-    else:
-        print(f"Sorry, '{tool_name}' is not a recognized tool in Kali Linux. Please check the name and try again.")
+def extract_text_from_pdf(pdf_path):
+    text = ""
+    with open(pdf_path, "rb") as file:
+        pdf_reader = PyPDF2.PdfFileReader(file)
+        num_pages = pdf_reader.numPages
+        for page_num in range(num_pages):
+            page = pdf_reader.getPage(page_num)
+            text += page.extractText()
+    return text
+
+def preprocess_text(text):
+    stop_words = set(stopwords.words("english"))
+    words = word_tokenize(text)
+    words = [word.lower() for word in words if word.isalpha()]
+    words = [word for word in words if word not in stop_words]
+    return " ".join(words)
+
+def find_answer(user_question, preprocessed_text):
+    # Basic keyword matching example
+    sentences = sent_tokenize(preprocessed_text)
+    for sentence in sentences:
+        if user_question.lower() in sentence:
+            return sentence
+    return "Sorry, I couldn't find an answer to your question."
 
 if __name__ == "__main__":
+    greet_user()
+    
+    # Load PDF files from the "database" folder
+    database_folder = "database"
+    pdf_files = [file for file in os.listdir(database_folder) if file.endswith(".pdf")]
+    
+    # Create a dictionary to store preprocessed text for each PDF
+    pdf_text_dict = {}
+    
+    # Process each PDF file and store the preprocessed text in the dictionary
+    for pdf_file in pdf_files:
+        pdf_file_path = os.path.join(database_folder, pdf_file)
+        pdf_text = extract_text_from_pdf(pdf_file_path)
+        preprocessed_text = preprocess_text(pdf_text)
+        pdf_text_dict[pdf_file] = preprocessed_text
+    
     kali_tools = {
         "nmap": {
             "description": "Nmap is a powerful network scanner used to discover hosts and services on a computer network.",
@@ -190,18 +226,31 @@ if __name__ == "__main__":
         },
     }
 
-    greet_user()
     while True:
         print("\nOPTIONS:")
-        print("Enter the name of the tool you want to learn about.")
-        print("Type 'list' to see all available tools.")
-        print("Type 'exit' to quit.")
-        user_choice = input("Please enter your choice: ").lower()
+        print("1. Enter the name of the tool you want to learn about.")
+        print("2. Type 'list' to see all available tools.")
+        print("3. Ask a question based on Kali Linux (e.g., 'How to use Nmap?')")
+        print("4. Type 'exit' to quit.")
+        user_input = input("Please enter your choice: ").lower()
 
-        if user_choice == "exit":
+        if user_input == "exit":
             print("Thank you for using K.A.L.I. Have a great day!")
             break
-        elif user_choice == "list":
-            list_all_tools(kali_tools)
+        elif user_input == "list":
+            list_all_tools()
         else:
-            search_tool(user_choice, kali_tools)
+            if user_input.endswith("?"):
+                # Question-answering based on the PDF database
+                user_question = user_input
+                answer_found = False
+                for pdf_file, preprocessed_text in pdf_text_dict.items():
+                    answer = find_answer(user_question, preprocessed_text)
+                    if answer != "Sorry, I couldn't find an answer to your question.":
+                        print("Assistant:", answer)
+                        answer_found = True
+                        break
+                if not answer_found:
+                    print("Assistant:", "Sorry, I couldn't find an answer to your question.")
+            else:
+                search_tool(user_input)
