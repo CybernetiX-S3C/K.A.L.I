@@ -22,11 +22,21 @@ def format_tool_info(tool_name, tool_description, usage_example, additional_opti
     print("ADDITIONAL OPTIONS:")
     print(additional_options)
 
-def list_all_tools():
+def list_all_tools(kali_tools):
     print("\n== LIST OF AVAILABLE TOOLS ==")
     for tool_name in kali_tools:
         print(f"- {tool_name.capitalize()}")
-def search_tool(tool_name):
+
+def search_tool(tool_name, kali_tools):
+    if tool_name.lower() == "list":
+        list_all_tools(kali_tools)
+    elif tool_name in kali_tools:
+        tool_info = kali_tools[tool_name]
+        format_tool_info(tool_name, tool_info["description"], tool_info["usage_example"], tool_info["additional_options"])
+    else:
+        print(f"Sorry, '{tool_name}' is not a recognized tool in Kali Linux. Please check the name and try again.")
+
+if __name__ == "__main__":
     kali_tools = {
         "nmap": {
             "description": "Nmap is a powerful network scanner used to discover hosts and services on a computer network.",
@@ -180,27 +190,18 @@ def search_tool(tool_name):
         },
     }
 
-    if tool_name.lower() == "list":
-        list_all_tools()
-    elif tool_name in kali_tools:
-        tool_info = kali_tools[tool_name]
-        format_tool_info(tool_name, tool_info["description"], tool_info["usage_example"], tool_info["additional_options"])
-    else:
-        print(f"Sorry, '{tool_name}' is not a recognized tool in Kali Linux. Please check the name and try again.")
-
-if __name__ == "__main__":
     greet_user()
     while True:
         print("\nOPTIONS:")
-        print("1. Enter the name of the tool you want to learn about.")
-        print("2. Type 'list' to see all available tools.")
-        print("3. Type 'exit' to quit.")
+        print("Enter the name of the tool you want to learn about.")
+        print("Type 'list' to see all available tools.")
+        print("Type 'exit' to quit.")
         user_choice = input("Please enter your choice: ").lower()
 
         if user_choice == "exit":
             print("Thank you for using K.A.L.I. Have a great day!")
             break
         elif user_choice == "list":
-            list_all_tools()
+            list_all_tools(kali_tools)
         else:
-            search_tool(user_choice)
+            search_tool(user_choice, kali_tools)
