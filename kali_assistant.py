@@ -26,7 +26,7 @@ def format_tool_info(tool_name, tool_description, usage_example, additional_opti
     print("ADDITIONAL OPTIONS:")
     print(additional_options)
 
-def list_all_tools():
+def list_all_tools(kali_tools):
     print("\n== LIST OF AVAILABLE TOOLS ==")
     for tool_name in kali_tools:
         print(f"- {tool_name.capitalize()}")
@@ -186,7 +186,7 @@ def search_tool(tool_name):
     }
 
     if tool_name.lower() == "list":
-        list_all_tools()
+        list_all_tools(kali_tools)
     elif tool_name in kali_tools:
         tool_info = kali_tools[tool_name]
         format_tool_info(tool_name, tool_info["description"], tool_info["usage_example"], tool_info["additional_options"])
@@ -249,7 +249,7 @@ if __name__ == "__main__":
             print("Thank you for using K.A.L.I. Have a great day!")
             break
         elif user_choice == "list":
-            list_all_tools()
+            list_all_tools(kali_tools)
         elif user_choice == "ask":
             question = input("Please enter your question: ")
             answer = search_question_in_files(question, file_list)
