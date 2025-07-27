@@ -3,6 +3,20 @@ import PyPDF2
 import ebooklib
 from ebooklib import epub
 import re
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
+from nltk.tokenize import word_tokenize
+
+# Download NLTK data (if not already downloaded)
+try:
+    stopwords.words("english")
+except LookupError:
+    nltk.download("stopwords")
+try:
+    nltk.data.find("tokenizers/punkt")
+except LookupError:
+    nltk.download("punkt")
 
 def get_username():
     try:
@@ -41,8 +55,17 @@ def search_tool(tool_name, kali_tools):
         print(f"Sorry, '{tool_name}' is not a recognized tool in Kali Linux. Please check the name and try again.")
 
 def search_question_in_files(question, file_list):
+    # Initialize NLTK components
+    stop_words = set(stopwords.words("english"))
+    stemmer = PorterStemmer()
+
+    # Preprocess the question
+    question_tokens = word_tokenize(question.lower())
+    question_stems = [stemmer.stem(word) for word in question_tokens if word.isalnum() and word not in stop_words]
+
     for file_path in file_list:
         file_extension = os.path.splitext(file_path)[1]
+        text = ""
         if file_extension == ".pdf":
             try:
                 with open(file_path, "rb") as pdf_file:
@@ -50,27 +73,46 @@ def search_question_in_files(question, file_list):
                     for page_num in range(pdf_reader.getNumPages()):
                         try:
                             page = pdf_reader.getPage(page_num)
-                            page_text = page.extractText().replace("\n", "").lower()
-                            if question.lower() in page_text:
-                                answer = re.search(f"{question}(.+?)\\n", page_text)
-                                if answer:
-                                    return answer.group(1).strip()
+                            text += page.extractText().replace("\n", "").lower()
                         except:
-                            # If an exception occurs during text extraction, continue with the next page
                             continue
             except:
-                # If an exception occurs during PDF file opening, continue with the next file
                 print(f"Error: The PDF file '{file_path}' could not be processed.")
                 continue
         elif file_extension == ".epub":
             book = epub.read_epub(file_path)
             for item in book.get_items():
                 if isinstance(item, epub.EpubTextItem):
-                    text = item.get_content().decode("utf-8").replace("\n", "").lower()
-                    if question.lower() in text:
-                        answer = re.search(f"{question}(.+?)\\n", text)
-                        if answer:
-                            return answer.group(1).strip()
+                    text += item.get_content().decode("utf-8").replace("\n", "").lower()
+
+        # Preprocess the text
+        text_tokens = word_tokenize(text)
+        text_stems = [stemmer.stem(word) for word in text_tokens if word.isalnum() and word not in stop_words]
+
+        # Search for the question stems in the text stems
+        for i in range(len(text_stems) - len(question_stems) + 1):
+            if text_stems[i:i+len(question_stems)] == question_stems:
+                # Find the start and end of the paragraph containing the answer
+                # Find the index of the original token
+                original_token_index = -1
+                for j in range(len(text_tokens)):
+                    if stemmer.stem(text_tokens[j]) == text_stems[i]:
+                        original_token_index = j
+                        break
+
+                if original_token_index != -1:
+                    # Find the start and end of the paragraph
+                    start_index = text.rfind("\n\n", 0, text.find(text_tokens[original_token_index]))
+                    if start_index == -1:
+                        start_index = 0
+                    else:
+                        start_index += 2
+                    end_index = text.find("\n\n", start_index)
+                    if end_index == -1:
+                        end_index = len(text)
+
+                    return text[start_index:end_index].strip()
+
     return None
 
 if __name__ == "__main__":
