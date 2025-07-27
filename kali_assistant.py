@@ -3,6 +3,38 @@ import PyPDF2
 import ebooklib
 from ebooklib import epub
 import re
+import speech_recognition as sr
+import pyttsx3
+
+def speak(text):
+    """Converts text to speech."""
+    try:
+        engine = pyttsx3.init()
+        engine.say(text)
+        engine.runAndWait()
+    except (OSError, RuntimeError) as e:
+        print(f"Text-to-speech not available: {e}")
+
+def listen():
+    """Listens for voice commands and returns the recognized text."""
+    r = sr.Recognizer()
+    try:
+        with sr.Microphone() as source:
+            print("Listening...")
+            audio = r.listen(source)
+        try:
+            command = r.recognize_google(audio)
+            print(f"You said: {command}")
+            return command.lower()
+        except sr.UnknownValueError:
+            speak("Sorry, I didn't catch that. Please try again.")
+            return None
+        except sr.RequestError:
+            speak("Sorry, my speech service is down.")
+            return None
+    except (OSError, AttributeError):
+        speak("Microphone not found. Please use text commands.")
+        return "exit"
 
 def get_username():
     try:
@@ -14,22 +46,28 @@ def get_username():
 
 def greet_user():
     username = get_username()
-    print(f"K.A.L.I. - Kali's Assistant for Learning and Investigations: Hello, {username}! I'm here to help you with your security and penetration testing inquiries on Kali Linux. How can I assist you today?")
+    greeting = f"K.A.L.I. - Kali's Assistant for Learning and Investigations: Hello, {username}! I'm here to help you with your security and penetration testing inquiries on Kali Linux. How can I assist you today?"
+    print(greeting)
+    speak(greeting)
 
 def format_tool_info(tool_name, tool_description, usage_example, additional_options):
-    print(f"\n== {tool_name.upper()} ==\n")
-    print("DESCRIPTION:")
-    print(tool_description)
-    print("\nUSAGE:")
-    print(f"To use {tool_name}, you can follow the command below:")
-    print(f"$ {usage_example}\n")
-    print("ADDITIONAL OPTIONS:")
-    print(additional_options)
+    info = f"\n== {tool_name.upper()} ==\n\n"
+    info += "DESCRIPTION:\n"
+    info += f"{tool_description}\n\n"
+    info += "USAGE:\n"
+    info += f"To use {tool_name}, you can follow the command below:\n"
+    info += f"$ {usage_example}\n\n"
+    info += "ADDITIONAL OPTIONS:\n"
+    info += additional_options
+    print(info)
+    speak(info)
 
 def list_all_tools(kali_tools):
     print("\n== LIST OF AVAILABLE TOOLS ==")
+    speak("Here is a list of available tools:")
     for tool_name in kali_tools:
         print(f"- {tool_name.capitalize()}")
+        speak(tool_name)
 
 def search_tool(tool_name, kali_tools):
     if tool_name.lower() == "list":
@@ -38,7 +76,9 @@ def search_tool(tool_name, kali_tools):
         tool_info = kali_tools[tool_name]
         format_tool_info(tool_name, tool_info["description"], tool_info["usage_example"], tool_info["additional_options"])
     else:
-        print(f"Sorry, '{tool_name}' is not a recognized tool in Kali Linux. Please check the name and try again.")
+        response = f"Sorry, '{tool_name}' is not a recognized tool in Kali Linux. Please check the name and try again."
+        print(response)
+        speak(response)
 
 def search_question_in_files(question, file_list):
     for file_path in file_list:
@@ -243,10 +283,12 @@ if __name__ == "__main__":
         print("1. Enter the name of the tool you want to learn about.")
         print("2. Type 'list' to see all available tools.")
         print("3. Type 'ask' to ask a question based on the database.")
-        print("4. Type 'exit' to quit.")
+        print("4. Type 'voice' to use voice commands.")
+        print("5. Type 'exit' to quit.")
         user_choice = input("Please enter your choice: ").lower()
 
         if user_choice == "exit":
+            speak("Thank you for using K.A.L.I. Have a great day!")
             print("Thank you for using K.A.L.I. Have a great day!")
             break
         elif user_choice == "list":
@@ -257,7 +299,31 @@ if __name__ == "__main__":
             if answer:
                 print("ANSWER:")
                 print(answer)
+                speak(answer)
             else:
-                print("Sorry, the answer to your question was not found in the database.")
+                response = "Sorry, the answer to your question was not found in the database."
+                print(response)
+                speak(response)
+        elif user_choice == "voice":
+            speak("Voice command mode activated. How can I help you?")
+            command = listen()
+            if command:
+                if "list" in command:
+                    list_all_tools(kali_tools)
+                elif "ask" in command:
+                    speak("What is your question?")
+                    question = listen()
+                    if question:
+                        answer = search_question_in_files(question, file_list)
+                        if answer:
+                            print("ANSWER:")
+                            print(answer)
+                            speak(answer)
+                        else:
+                            response = "Sorry, the answer to your question was not found in the database."
+                            print(response)
+                            speak(response)
+                else:
+                    search_tool(command, kali_tools)
         else:
             search_tool(user_choice, kali_tools)
