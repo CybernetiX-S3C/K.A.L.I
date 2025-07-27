@@ -5,6 +5,14 @@ from ebooklib import epub
 import re
 import speech_recognition as sr
 import pyttsx3
+import subprocess
+
+def run_command(command):
+    """Runs a shell command and prints the output in real-time."""
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+    for line in process.stdout:
+        print(line, end='')
+    process.wait()
 
 def speak(text):
     """Converts text to speech."""
@@ -276,6 +284,21 @@ if __name__ == "__main__":
             "usage_example": "beef-xss",
             "additional_options": "Beef-XSS provides modules for browser exploitation. Refer to the documentation for detailed usage.",
         },
+        "update": {
+            "description": "Updates the package list.",
+            "usage_example": "sudo apt-get update",
+            "additional_options": "",
+        },
+        "upgrade": {
+            "description": "Upgrades all installed packages.",
+            "usage_example": "sudo apt-get upgrade -y",
+            "additional_options": "",
+        },
+        "full-upgrade": {
+            "description": "Upgrades all installed packages and handles changing dependencies.",
+            "usage_example": "sudo apt-get full-upgrade -y",
+            "additional_options": "",
+        },
     }
 
     while True:
@@ -293,6 +316,12 @@ if __name__ == "__main__":
             break
         elif user_choice == "list":
             list_all_tools(kali_tools)
+        elif user_choice == "update":
+            run_command("sudo apt-get update")
+        elif user_choice == "upgrade":
+            run_command("sudo apt-get upgrade -y")
+        elif user_choice == "full-upgrade":
+            run_command("sudo apt-get full-upgrade -y")
         elif user_choice == "ask":
             question = input("Please enter your question: ")
             answer = search_question_in_files(question, file_list)
@@ -310,6 +339,12 @@ if __name__ == "__main__":
             if command:
                 if "list" in command:
                     list_all_tools(kali_tools)
+                elif "update" in command:
+                    run_command("sudo apt-get update")
+                elif "upgrade" in command:
+                    run_command("sudo apt-get upgrade -y")
+                elif "full-upgrade" in command:
+                    run_command("sudo apt-get full-upgrade -y")
                 elif "ask" in command:
                     speak("What is your question?")
                     question = listen()
