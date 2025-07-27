@@ -77,14 +77,16 @@ def list_all_tools(kali_tools):
         print(f"- {tool_name.capitalize()}")
         speak(tool_name)
 
-def search_tool(tool_name, kali_tools):
+def search_tool(command, kali_tools):
+    parts = command.split()
+    tool_name = parts[0]
+
     if tool_name.lower() == "list":
         list_all_tools(kali_tools)
     elif tool_name in kali_tools:
-        tool_info = kali_tools[tool_name]
-        format_tool_info(tool_name, tool_info["description"], tool_info["usage_example"], tool_info["additional_options"])
+        run_command(command)
     else:
-        response = f"Sorry, '{tool_name}' is not a recognized tool in Kali Linux. Please check the name and try again."
+        response = f"Sorry, '{command}' is not a recognized tool or command in Kali Linux. Please check the name and try again."
         print(response)
         speak(response)
 
@@ -298,6 +300,31 @@ if __name__ == "__main__":
             "description": "Upgrades all installed packages and handles changing dependencies.",
             "usage_example": "sudo apt-get full-upgrade -y",
             "additional_options": "",
+        },
+        "whatweb": {
+            "description": "WhatWeb identifies websites. It recognises web technologies including content management systems (CMS), blogging platforms, statistic/analytics packages, JavaScript libraries, web servers, and embedded devices.",
+            "usage_example": "whatweb <target>",
+            "additional_options": "Refer to the man page for more options.",
+        },
+        "theharvester": {
+            "description": "TheHarvester is a tool for gathering open source intelligence (OSINT) on a company or domain.",
+            "usage_example": "theharvester -d <domain> -b <source>",
+            "additional_options": "Refer to the man page for more options.",
+        },
+        "sherlock": {
+            "description": "Sherlock is a tool to hunt for social media accounts by username across social networks.",
+            "usage_example": "sherlock <username>",
+            "additional_options": "Refer to the man page for more options.",
+        },
+        "cowpatty": {
+            "description": "CoWPAtty is a tool to audit WPA-PSK networks.",
+            "usage_example": "cowpatty -f <password_file> -r <pcap_file> -s <ssid>",
+            "additional_options": "Refer to the man page for more options.",
+        },
+        "crunch": {
+            "description": "Crunch is a wordlist generator where you can specify a standard character set or a character set you specify.",
+            "usage_example": "crunch <min> <max> <characterset>",
+            "additional_options": "Refer to the man page for more options.",
         },
     }
 
